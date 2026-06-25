@@ -57,8 +57,8 @@ end_time = time.time()
 total_time = end_time - start_time
 print("\n" + "="*50)
 print("Scan Complete")
-print("Asset & Threat Profile Advisory")
 print(f"Total Time Elapsed: {total_time:.2f} seconds")
+print("Asset & Threat Profile Advisory")
 print("="*50)
 
 if not detected_services:
