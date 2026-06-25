@@ -2,7 +2,19 @@ import ipaddress
 import socket
 import time
 from concurrent.futures import ThreadPoolExecutor
+
 timeout = 0.1
+
+THREAT_PROFILES = {
+    21 = "FTP (Plaintext credentials transfer risk)",
+    22 = "SSH (Remote Access Management - Verify authentication strength)",
+    23 = "Telnet (Unencryoted remote administration hazard)",
+    25 = "SMTP (Mail relay tracking required)",
+    53 = "DNS (Potential zone transfer or amplification vector)",
+    80 = "HTTP (Cleartext web traffic)",
+    443 = "HTTPS (Encrypted web traffic - Check certificate validity)",
+    445 = "SMB (File sharing - High Priority inspection for legacy exploits)"
+}
 
 target_input = input("Enter the target Network (e.g. 192.168.1.0/24)")
 network = ipaddress.ip_network(target_input, strict=False)
@@ -33,6 +45,8 @@ else:
 
 start_time = time.time()
 
+detected_services = []
+
 for ip in host_list:
     print(f"\n Scanning host: {ip}...")
     with ThreadPoolExecutor(max_workers=100) as executor:
@@ -41,7 +55,16 @@ for ip in host_list:
 
 end_time = time.time()
 total_time = end_time - start_time
-print("\n" + "="*40)
+print("\n" + "="*50)
 print("Scan Complete")
+print("Asset & Threat Profile Advisory")
 print(f"Total Time Elapsed: {total_time:.2f} seconds")
-print("="*40)
+print("="*50)
+
+if not detected_services:
+    print("No active common services identified in this scope.")
+else:
+    for port in sorted(set(detected_services)):
+        profile = THREAT_PROFILES.get(port, "Unknown / Custom Service")
+        print(f"[!] Port {port} Open - {profile} ")
+print("="*50)        
