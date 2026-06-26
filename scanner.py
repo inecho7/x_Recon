@@ -22,15 +22,27 @@ max_threads = int(threads_input) if threads_input.isdigit() else 100
 target_input = input("Enter the target Network (e.g. 192.168.1.0/24)")
 network = ipaddress.ip_network(target_input, strict=False)
 host_list = network.hosts()
+
 def scan_port(ip, port, timeout):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(timeout)
         result = s.connect_ex((str(ip), port))
         if result == 0:
-            print(f"Host {ip} {port} is active!")
+            detected_services.append(port)
+            banner = "Unknown Service (No banner returned)"
+
+            try:
+                s.send(b"GET / HTTP\1.1\r\n\r\n")
+                data = s.recv(1024)
+                if data:
+                    banner = data.decode('utf-8', errors='ignore').strip().split('\n')[0]
+            except Exception:
+                pass
+
+            print(f"[+] Host {ip} | Port {port} is active -> {banner}")
         s.close()
-    except:
+    except Exception:
         pass
 
 print("Select the type of scan you want")
